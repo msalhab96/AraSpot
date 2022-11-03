@@ -50,11 +50,12 @@ class FileProcessor(IProcessor):
 
     def load(self, file_path: Union[str, Path]):
         x, sr = torchaudio.load(file_path)
-        x = self.resample(x, sr)
+        x = self._resample(x, sr)
         return x
 
     def process(self, file: Union[str, Path]):
         # TODO: add SpecAug
         x = self.load(file)
         x = self.feat_extractor(x)
-        return x
+        x = x.permute(0, 2, 1)
+        return x.squeeze()
