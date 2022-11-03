@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 from torch import Tensor
 
@@ -93,3 +94,51 @@ class Encoder(nn.Module):
         out = self.dropout(out)
         out, hn = self.grus(out)
         return out, hn
+
+
+class Decoder(nn.Module):
+    def __init__(
+            self,
+            vocab_size: int,
+            emb_dim: int,
+            enc_hidden_size: int,
+            dec_hidden_size: int,
+            p_dropout=0.25
+            ):
+        super().__init__()
+        self.emb = nn.Embedding(
+            num_embeddings=vocab_size,
+            embedding_dim=emb_dim
+        )
+        self.gru = nn.GRU(
+            input_size=emb_dim,
+            hidden_size=dec_hidden_size,
+            batch_first=True,
+            bidirectional=False
+            )
+        self.fc = nn.Linear(
+            in_features=enc_hidden_size,
+            out_features=dec_hidden_size
+        )
+        self.pred = nn.Linear(
+            in_features=dec_hidden_size,
+            out_features=vocab_size
+        )
+        self.dropout = nn.Dropout(p_dropout)
+
+    def forward(self, y: Tensor, hn: Tensor):
+        hn = self.fc(hn)
+        hn = hn.permute(1, 0, 2)
+        max_len = y.shape[1]
+        y = self.emb(y)
+        y = self.dropout(y)
+        results = None
+        for i in range(max_len):
+            temp = y[:, i:i + 1, :]
+            out, hn = self.gru(temp, hn)
+            if results is None:
+                results = out
+            else:
+                results = torch.cat([results, out], dim=1)
+        results = self.pred(results)
+        return results
