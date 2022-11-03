@@ -1,0 +1,5 @@
+pad = 'pad'
+sos = 'sos'
+eos = 'eos'
+path_column = 'file'
+class_column = 'class'
