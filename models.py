@@ -1,6 +1,9 @@
+import os
+from config import get_model_args
 from layers import Decoder, Encoder
 from torch import Tensor
 from torch import nn
+import torch
 
 
 class ConvSeq2Seq(nn.Module):
@@ -51,3 +54,13 @@ class ConvSeq2Seq(nn.Module):
         hn = hn.squeeze(dim=1)
         preds = self.pred_fc(hn)
         return out, preds, result
+
+
+def get_model(cfg, vocab_size, n_classes):
+    model = ConvSeq2Seq(
+        **get_model_args(cfg, vocab_size, n_classes)
+    )
+    if os.path.exists(cfg.ckpt_path) is True:
+        model.load_state_dict(torch.load(cfg.ckpt_path))
+        print(f'{cfg.ckpt_path} loadded!')
+    return model
