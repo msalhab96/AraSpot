@@ -1,11 +1,13 @@
 from pathlib import Path
 from typing import Tuple, Union
+from config import get_feat_args
 from interfaces import IProcessor
 from torch import Tensor
 import torch
 import torchaudio
 from torchaudio import transforms
 from constants import pad, eos, sos
+from utils import load_json
 
 
 class TextProcessor(IProcessor):
@@ -59,3 +61,25 @@ class FileProcessor(IProcessor):
         x = self.feat_extractor(x)
         x = x.permute(0, 2, 1)
         return x.squeeze()
+
+
+def get_text_processor(cfg):
+    return TextProcessor(
+        chars_mapper=load_json(cfg.chars_mapper),
+        max_len=cfg.max_len
+    )
+
+
+def get_speech_processor(cfg):
+    return FileProcessor(
+        sampling_rate=cfg.sampling_rate,
+        feature=cfg.feature,
+        feature_args=get_feat_args(cfg)
+    )
+
+
+def get_processors(cfg):
+    return (
+        get_text_processor(cfg),
+        get_speech_processor(cfg)
+        )
