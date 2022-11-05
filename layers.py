@@ -345,6 +345,7 @@ class Conformer(nn.Module):
         self.layers = nn.ModuleList([
             ConformerBlock(
                 enc_dim=enc_dim,
+                h=h,
                 kernel_size=kernel_size,
                 scaling_factor=scaling_factor,
                 residual_scaler=residual_scaler,
