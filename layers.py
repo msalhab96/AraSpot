@@ -282,3 +282,48 @@ class MHSA(nn.Module):
         result = self.proj_fc(result)
         out = self.dropout(result)
         return inp + out
+
+
+class ConformerBlock(nn.Module):
+    def __init__(
+            self,
+            enc_dim: int,
+            h: int,
+            kernel_size: int,
+            scaling_factor: int,
+            residual_scaler: float,
+            device: str,
+            p_dropout: float
+            ) -> None:
+        super().__init__()
+        self.ff1 = FeedForwardModule(
+            enc_dim=enc_dim,
+            scaling_factor=scaling_factor,
+            p_dropout=p_dropout,
+            residual_scaler=residual_scaler
+        )
+        self.mhsa = MHSA(
+            enc_dim=enc_dim,
+            h=h, p_dropout=p_dropout, device=device
+        )
+        self.conv = ConvModule(
+            enc_dim=enc_dim,
+            scaling_factor=scaling_factor,
+            kernel_size=kernel_size,
+            p_dropout=p_dropout
+            )
+        self.ff2 = FeedForwardModule(
+            enc_dim=enc_dim,
+            scaling_factor=scaling_factor,
+            p_dropout=p_dropout,
+            residual_scaler=residual_scaler
+        )
+        self.lnorm = nn.LayerNorm(enc_dim)
+
+    def forward(self, inp: Tensor):
+        out = self.ff1(inp)
+        out = self.mhsa(out)
+        out = self.conv(out)
+        out = self.ff2(out)
+        out = self.lnorm(out)
+        return out
