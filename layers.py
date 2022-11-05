@@ -327,3 +327,34 @@ class ConformerBlock(nn.Module):
         out = self.ff2(out)
         out = self.lnorm(out)
         return out
+
+
+class Conformer(nn.Module):
+    def __init__(
+            self,
+            n_layers: int,
+            enc_dim: int,
+            h: int,
+            kernel_size: int,
+            scaling_factor: int,
+            residual_scaler: float,
+            device: str,
+            p_dropout: float
+            ) -> None:
+        super().__init__()
+        self.layers = nn.ModuleList([
+            ConformerBlock(
+                enc_dim=enc_dim,
+                kernel_size=kernel_size,
+                scaling_factor=scaling_factor,
+                residual_scaler=residual_scaler,
+                device=device,
+                p_dropout=p_dropout
+            )
+            for _ in range(n_layers)
+        ])
+
+    def forward(self, x: Tensor) -> Tensor:
+        for layer in self.layers:
+            x = layer(x)
+        return x
