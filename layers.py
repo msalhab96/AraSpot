@@ -244,7 +244,7 @@ class MHSA(nn.Module):
     def _change_dim(self, *args) -> List[Tensor]:
         """Changes the dimensionality of all passed tensores
         from [B, T, N] to [B * h, T, dk]
-        Returns:
+        Returns:from functools import lru_cache
             List[Tensor]: List of the modified tensors.
         """
         result = self._reshape(*args)  # [B, T, h, dk]
@@ -264,6 +264,9 @@ class MHSA(nn.Module):
             Tensor: The result after adding it to positionals
             and passing it through multi-head self-attention
         """
+        pos = self.get_positionals(inp.shape[1])
+        pos = pos.unsqueeze(dim=0).to(inp.device)
+        inp = pos + inp
         out = self.lnorm(inp)
         [b, s, _] = inp.shape
         K = self.fc_key(inp)
