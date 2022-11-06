@@ -13,5 +13,5 @@ class Loss(nn.Module):
         return self.nlll(preds, target)
 
 
-def get_criterion(cfg, pad_idx):
-    return Loss(cfg.alpha, pad_idx)
+def get_criterion(cfg):
+    return Loss()
