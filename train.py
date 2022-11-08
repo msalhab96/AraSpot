@@ -1,6 +1,11 @@
 import math
 import os
 import torch
+from config import get_args
+from data import get_loaders
+from logger import get_logger
+from loss import get_criterion
+from models import get_model
 from utils import calc_acc, load_json
 
 
@@ -105,3 +110,43 @@ class Trainer:
             )
         )
         self._last = total_loss
+
+
+def get_optim(cfg, model):
+    return torch.optim.Adam(
+        model.parameters(), lr=cfg.lr
+        )
+
+
+def get_trainer(cfg):
+    cls_mapper = load_json(cfg.cls_mapper)
+    n_classes = len(cls_mapper)
+    model = get_model(
+        cfg, n_classes=n_classes
+        )
+    optimizer = get_optim(cfg, model)
+    criterion = get_criterion(cfg)
+    logger = get_logger(cfg)
+    train_loader, test_laoder = get_loaders(
+        cfg, cls_mapper=cls_mapper
+        )
+    if os.path.exists(cfg.outdir) is False:
+        os.mkdir(cfg.outdir)
+    trainer = Trainer(
+        train_loader=train_loader,
+        test_loader=test_laoder,
+        model=model,
+        optimizer=optimizer,
+        criterion=criterion,
+        epochs=cfg.epochs,
+        outdir=cfg.outdir,
+        device=cfg.device,
+        logger=logger
+    )
+    return trainer
+
+
+if __name__ == '__main__':
+    cfg = get_args()
+    print(cfg)
+    get_trainer(cfg).fit()
