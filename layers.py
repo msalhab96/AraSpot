@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 from typing import List
 from torch import Tensor
-from functools import lru_cache
 
 
 class FeedForwardModule(nn.Module):
@@ -203,22 +202,6 @@ class MHSA(nn.Module):
         result = torch.matmul(att, V)
         return att, result
 
-    @lru_cache(maxsize=2)
-    def get_positionals(self, max_length: int) -> Tensor:
-        """Create Positionals tensor to be added to the input
-        Args:
-            max_length (int): The maximum length of the positionals sequence.
-        Returns:
-            Tensor: Positional tensor
-        """
-        result = torch.zeros(max_length, self.enc_dim, dtype=torch.float)
-        for pos in range(max_length):
-            for i in range(0, self.enc_dim, 2):
-                denominator = pow(10000, 2 * i / self.enc_dim)
-                result[pos, i] = math.sin(pos / denominator)
-                result[pos, i + 1] = math.cos(pos / denominator)
-        return result
-
     def _reshape(self, *args) -> List[Tensor]:
         """Reshabes all the given list of tensor
         from [B, T, N] to [B, T, h, dk]
@@ -264,9 +247,6 @@ class MHSA(nn.Module):
             Tensor: The result after adding it to positionals
             and passing it through multi-head self-attention
         """
-        pos = self.get_positionals(inp.shape[1])
-        pos = pos.unsqueeze(dim=0).to(inp.device)
-        inp = pos + inp
         out = self.lnorm(inp)
         [b, s, _] = inp.shape
         K = self.fc_key(inp)
