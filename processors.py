@@ -39,7 +39,8 @@ class Augmentor(IProcessor):
             max_freq_len: int,
             max_time_len: int,
             n_mask: int,
-            p_aug: float,
+            p_time_aug: float,
+            p_spec_aug: float,
             sample_rate: int,
             noise_path
             ) -> None:
@@ -58,7 +59,8 @@ class Augmentor(IProcessor):
             time_mask_param=max_time_len
         )
         self.n_mask = n_mask
-        self.p_aug = p_aug
+        self.p_time_aug = p_time_aug
+        self.p_spec_aug = p_spec_aug
         self._noise = []
         for file in os.listdir(noise_path):
             x, sr = torchaudio.load(os.path.join(noise_path, file))
@@ -104,8 +106,8 @@ class Augmentor(IProcessor):
             x = self.time_aug(x)
         return x
 
-    def _apply(self, x, func):
-        if random.random() > self.p_aug:
+    def _apply(self, x, func, threshold):
+        if random.random() > threshold:
             x = func(x)
         return x
 
@@ -117,12 +119,12 @@ class Augmentor(IProcessor):
             ]
         random.shuffle(ops)
         for op in ops:
-            x = self._apply(x, op)
+            x = self._apply(x, op, self.p_time_aug)
         return x
 
     def _spec_aug(self, x: Tensor):
-        x = self._apply(x, self.spec_mask)
-        x = self._apply(x, self.time_mask)
+        x = self._apply(x, self.spec_mask, self.p_spec_aug)
+        x = self._apply(x, self.time_mask, self.p_spec_aug)
         return x
 
     def process(self, x: Tensor, time=False, spec=False) -> Tensor:
@@ -179,7 +181,8 @@ def get_augmenter(cfg):
         max_freq_len=cfg.max_freq_len,
         max_time_len=cfg.max_time_len,
         n_mask=cfg.n_mask,
-        p_aug=cfg.p_aug,
+        p_time_aug=cfg.p_time_aug,
+        p_spec_aug=cfg.p_spec_aug,
         sample_rate=cfg.sample_rate,
         noise_path=cfg.noise_path
     )
