@@ -38,8 +38,12 @@ class ConformerGRU(nn.Module):
             batch_first=True,
             bidirectional=bidirectional
         )
-        self.pred_fc = nn.Linear(
+        self.fc0 = nn.Linear(
             in_features=2 * enc_dim if bidirectional else enc_dim,
+            out_features=4 * enc_dim if bidirectional else 2 * enc_dim
+        )
+        self.pred_fc = nn.Linear(
+            in_features=4 * enc_dim if bidirectional else 2 * enc_dim,
             out_features=n_classes
         )
         self.fc = nn.Linear(
@@ -50,7 +54,8 @@ class ConformerGRU(nn.Module):
         out = self.fc(x)
         out = self.conf(out)
         out, h = self.gru(out)
-        h = h.permute(1, 0, 2).view(x.shape[0], -1)
+        h = h.permute(1, 0, 2).contiguous().view(x.shape[0], -1)
+        h = self.fc0(h)
         return self.pred_fc(h)
 
 
