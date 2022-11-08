@@ -7,13 +7,10 @@ def add_model_args(parser):
         '--residual_scaler', type=float, default=0.5
         )
     group.add_argument(
-        '--kernel_size', type=int, default=5
+        '--kernel_size', type=int, default=31
         )
     group.add_argument(
         '--scaling_factor', type=int, default=2
-    )
-    group.add_argument(
-        '--emb_dim', type=int, default=64
     )
     group.add_argument(
         '--n_layers', type=int, default=1
@@ -25,7 +22,7 @@ def add_model_args(parser):
         '--bidirectional', type=bool, default=True
     )
     group.add_argument(
-        '--p_dropout', type=float, default=0.25
+        '--p_dropout', type=float, default=0.1
     )
     group.add_argument(
         '--ckpt_path', type=str, default=''
@@ -33,6 +30,7 @@ def add_model_args(parser):
     group.add_argument(
         '--h', type=int, default=4
     )
+
 
 def add_aug_args(parser):
     group = parser.add_argument_group('augmentation')
@@ -68,10 +66,10 @@ def add_feature_args(parser):
         '--n_fft', type=int, default=400
         )
     group.add_argument(
-        '--win_length', type=int, default=340
+        '--win_length', type=int, default=400
         )
     group.add_argument(
-        '--hop_length', type=int, default=120
+        '--hop_length', type=int, default=160
         )
     group.add_argument(
         '--n_mels', type=int, default=80
@@ -90,9 +88,6 @@ def add_train_args(parser):
         '--batch_size', type=int, default=32
         )
     group.add_argument(
-        '--alpha', type=float, default=0.5
-        )
-    group.add_argument(
         '--outdir', type=str, default='outdir/'
         )
     group.add_argument(
@@ -108,16 +103,7 @@ def add_train_args(parser):
         '--test_path', type=str, default='val.csv'
         )
     group.add_argument(
-        '--chars_mapper', type=str, default='mappers/chars.json'
-        )
-    group.add_argument(
         '--cls_mapper', type=str, default='mappers/cls.json'
-        )
-    group.add_argument(
-        '--text_mapper', type=str, default='mappers/mapper.json'
-        )
-    group.add_argument(
-        '--max_len', type=str, default=50
         )
 
 
@@ -159,6 +145,6 @@ def get_feat_args(cfg):
             'melkwargs': mel
         }
     return dict(
-        **{'sample_rate': cfg.sample_rate,},
+        **{'sample_rate': cfg.sample_rate, },
         **mel
         )
