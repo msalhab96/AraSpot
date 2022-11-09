@@ -47,7 +47,10 @@ def add_aug_args(parser):
         '--noise_path', type=str, default='noise/'
         )
     group.add_argument(
-        '--p_aug', type=float, default=0.5
+        '--p_time_aug', type=float, default=0.5
+        )
+    group.add_argument(
+        '--p_spec_aug', type=float, default=0.2
         )
 
 
@@ -107,12 +110,23 @@ def add_train_args(parser):
         )
 
 
+def add_eval_args(parser):
+    group = parser.add_argument_group('Evaluation')
+    group.add_argument(
+        '--eval_file', type=str, required=False
+        )
+    group.add_argument(
+        '--eval_file_result', type=str, required=False, default='results.csv'
+        )
+
+
 def get_args() -> dict:
     parser = ArgumentParser()
     add_aug_args(parser)
     add_model_args(parser)
     add_feature_args(parser)
     add_train_args(parser)
+    add_eval_args(parser)
     return parser.parse_args()
 
 
