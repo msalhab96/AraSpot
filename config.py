@@ -52,6 +52,15 @@ def add_aug_args(parser):
     group.add_argument(
         '--p_spec_aug', type=float, default=0.2
         )
+    group.add_argument(
+        '--rir_path', type=str, default='rir/'
+        )
+    group.add_argument(
+        '--min_rir', type=int, default=500
+        )
+    group.add_argument(
+        '--max_rir', type=int, default=4000
+        )
 
 
 def add_feature_args(parser):
