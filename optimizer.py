@@ -6,14 +6,12 @@ class AdamLinearDecay:
             self,
             parameters,
             lr: float,
-            decay_rate: int,
             epochs: int,
             *args,
             **kwargs
             ):
         self.epochs = epochs
         self.lr = lr
-        self.decay_rate = decay_rate
         self._counter = 0
         self.optimizer = Adam(
             parameters,
