@@ -1,5 +1,6 @@
 import math
 import os
+from optimizer import AdamLinearDecay
 import torch
 from config import get_args
 from data import get_loaders
@@ -84,6 +85,10 @@ class Trainer:
                 torch.hstack(all_targets)
                 )
             )
+        self.optimizer.update_lr()
+        self.logger.record(
+            'lr', self.optimizer.get_lr()
+        )
 
     @torch.no_grad()
     def test(self):
@@ -113,8 +118,8 @@ class Trainer:
 
 
 def get_optim(cfg, model):
-    return torch.optim.Adam(
-        model.parameters(), lr=cfg.lr
+    return AdamLinearDecay(
+        model.parameters(), lr=cfg.lr, epochs=cfg.epochs
         )
 
 
