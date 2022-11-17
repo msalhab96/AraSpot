@@ -42,7 +42,10 @@ class Augmentor(IProcessor):
             p_time_aug: float,
             p_spec_aug: float,
             sample_rate: int,
-            noise_path
+            noise_path: Union[str, Path],
+            rir_path: Union[str, Path],
+            min_rir=500,
+            max_rir=4000
             ) -> None:
         super().__init__()
         self.fade_shapes = [
@@ -61,13 +64,21 @@ class Augmentor(IProcessor):
         self.n_mask = n_mask
         self.p_time_aug = p_time_aug
         self.p_spec_aug = p_spec_aug
-        self._noise = []
-        for file in os.listdir(noise_path):
-            x, sr = torchaudio.load(os.path.join(noise_path, file))
-            x = transforms.Resample(sr, sample_rate)(x)
-            self._noise.append(x)
+        self._noise = self.load_files(noise_path, sample_rate)
+        self._rir = self.load_files(rir_path, sample_rate)
         self._noise = torch.hstack(self._noise)
         self._max_noise_idx = self._noise.shape[1]
+        self.min_rir = min_rir
+        self.max_rir = max_rir
+
+    @staticmethod
+    def load_files(dir_path, target_sr):
+        results = []
+        for file in os.listdir(dir_path):
+            x, sr = torchaudio.load(os.path.join(dir_path, file))
+            x = transforms.Resample(sr, target_sr)(x)
+            results.append(x)
+        return results
 
     def rand_vol_gain(self, x: Tensor):
         gain = 2 * max(0.1, random.random())
@@ -96,6 +107,29 @@ class Augmentor(IProcessor):
         x[:, start_idx: start_idx + segment_len] += noise
         return x
 
+    def pad(self, x: Tensor, length: int):
+        x_len = x.shape[-1]
+        padded = torch.zeros(1, x_len + length - 1)
+        start_idx = random.randint(0, length - 1)
+        padded[:, start_idx: start_idx + x_len] = x
+        return padded
+
+    def reverb(self, x: Tensor):
+        reverb_length = random.randint(
+            self.min_rir, self.max_rir
+        )
+        impulse = random.choice(self._rir)
+        impulse = impulse[:, :reverb_length]
+        impulse = impulse.flip(dims=[-1])
+        impulse = impulse.unsqueeze(dim=0)
+        impulse = impulse.cuda()
+        x = self.pad(x, reverb_length)
+        x = x.unsqueeze(dim=0)
+        x = x.cuda()
+        x = torch.nn.functional.conv1d(x, impulse)
+        x = x.squeeze(dim=0)
+        return x.cpu()
+
     def spec_mask(self, x: Tensor):
         for _ in range(self.n_mask):
             x = self.spec_aug(x)
@@ -115,7 +149,8 @@ class Augmentor(IProcessor):
         ops = [
             self.add_bg_noise,
             self.rand_fade,
-            self.rand_vol_gain
+            self.rand_vol_gain,
+            self.reverb
             ]
         random.shuffle(ops)
         for op in ops:
@@ -129,7 +164,8 @@ class Augmentor(IProcessor):
 
     def process(self, x: Tensor, time=False, spec=False) -> Tensor:
         if time is True:
-            return self._time_aug(x)
+            x = self._time_aug(x)
+            return x
         if spec is True:
             return self._spec_aug(x)
         return x
@@ -184,7 +220,10 @@ def get_augmenter(cfg):
         p_time_aug=cfg.p_time_aug,
         p_spec_aug=cfg.p_spec_aug,
         sample_rate=cfg.sample_rate,
-        noise_path=cfg.noise_path
+        noise_path=cfg.noise_path,
+        rir_path=cfg.rir_path,
+        min_rir=cfg.min_rir,
+        max_rir=cfg.max_rir
     )
 
 
