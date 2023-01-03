@@ -14,9 +14,10 @@ The below image shows the results accros different experiemnts as illustrated in
 ![results](https://user-images.githubusercontent.com/61272193/207247264-68f7ac99-dd0e-4a92-b719-ddc1aeb1368f.png)
 
 # Try it out
-1. Instal the requiremnts using the command below
+1. Install the requiremnts using the command below
 ```bash
 pip install -r requirements.txt
 ```
 2. Download the modele from [here](https://drive.google.com/drive/folders/1p7GM39U08bFlg1LTs_CPIXdbAX9uMJsR?usp=sharing), or the best performing model from [here](https://drive.google.com/file/d/1WvRoesQDzAeZI_Vx3L6_EeLrp5vMzuJI/view?usp=sharing)
 
+3. Use the function ```single_predict''' in ```predict.py ``` file.
