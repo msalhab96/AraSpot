@@ -20,4 +20,4 @@ pip install -r requirements.txt
 ```
 2. Download the modele from [here](https://drive.google.com/drive/folders/1p7GM39U08bFlg1LTs_CPIXdbAX9uMJsR?usp=sharing), or the best performing model from [here](https://drive.google.com/file/d/1WvRoesQDzAeZI_Vx3L6_EeLrp5vMzuJI/view?usp=sharing)
 
-3. Use the function ```single_predict''' in ```predict.py ``` file.
+3. Use the function ```single_predict``` in ```predict.py``` file.
