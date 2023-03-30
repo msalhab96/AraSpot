@@ -1,6 +1,6 @@
 # AraSpot: Arabic Spoken Command Spotting
 
-This is the official implementation of !["AraSpot: Arabic Spoken Command Spotting"](https://arxiv.org/abs/2303.16621) paper, which achieved SOTA on the ASC dataset 99.59% accuracy on the test set, by introducing the ConformerGRU as shown in the image below, applying online data augmentation, and synthetic data generation.
+This is the official implementation of ["AraSpot: Arabic Spoken Command Spotting"](https://arxiv.org/abs/2303.16621) paper, which achieved SOTA on the ASC dataset 99.59% accuracy on the test set, by introducing the ConformerGRU as shown in the image below, applying online data augmentation, and synthetic data generation.
 
 ![model](https://user-images.githubusercontent.com/61272193/207247142-7a667756-2aea-4519-ac4b-ba86221464dc.png)
 
